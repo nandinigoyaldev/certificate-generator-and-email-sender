@@ -41,6 +41,37 @@
                         <input type="text" id="name" name="name" value="Jane Doe">
                     </div>
 
+                    <div class="email-settings-box" style="margin: 1.5rem 0; padding: 1.5rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                        <h3 style="font-size: 0.95rem; margin-bottom: 1rem; color: var(--text-primary);">Email Configuration</h3>
+                        
+                        <div class="form-group">
+                            <label for="smtp_server">SMTP Server</label>
+                            <input type="text" id="smtp_server" name="smtp_server" value="smtp.gmail.com">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="sender_email">Sender Email</label>
+                                <input type="email" id="sender_email" name="sender_email" placeholder="your@gmail.com">
+                            </div>
+                            <div class="form-group half">
+                                <label for="sender_password">App Password</label>
+                                <input type="password" id="sender_password" name="sender_password" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <small class="helper-text" style="margin-top: -0.5rem; margin-bottom: 1rem;">Required for sending emails. Passwords are sent securely and never stored.</small>
+                        
+                        <div class="form-group">
+                            <label for="subject">Email Subject</label>
+                            <input type="text" id="subject" name="subject" value="Here is your Certificate!">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="body">Email Body</label>
+                            <textarea id="body" name="body" rows="3">Hello,&#13;&#10;&#13;&#10;Thank you for participating! Please find your certificate attached.&#13;&#10;&#13;&#10;Best regards,</textarea>
+                        </div>
+                    </div>
+
                     <div class="form-group file-upload">
                         <label for="template_file">Template Image (PNG/JPG)</label>
                         <input type="file" id="template_file" name="template_file" accept="image/*">
@@ -107,11 +138,8 @@
                 <h2>Quick Start Guide</h2>
                 <div class="instruction-content">
                     <section class="instruction-step">
-                        <h3>1. Environment Setup (Critical)</h3>
-                        <p>To enable the email sending functionality, you must configure your SMTP credentials. Create a <code>.env</code> file in the root directory or add these to your Vercel Environment Variables:</p>
-                        <pre><code>SMTP_SERVER=smtp.gmail.com
-EMAIL_ACCOUNTS=your.email@gmail.com,another@gmail.com
-EMAIL_PASSWORDS=your_app_password,another_password</code></pre>
+                        <h3>1. Email Setup</h3>
+                        <p>To enable the email sending functionality, you must enter your SMTP credentials directly in the Dashboard. No code changes are required.</p>
                         <p class="note"><strong>Note:</strong> If using Gmail, you must generate an <a href="https://support.google.com/accounts/answer/185833" target="_blank" style="color: var(--accent-primary)">App Password</a>. Regular passwords will not work.</p>
                     </section>
 

@@ -65,30 +65,9 @@ CredFlow is pre-configured for instant serverless deployment on Vercel!
 1. Push your code to a GitHub repository.
 2. Sign in to [Vercel](https://vercel.com) and click **Add New Project**.
 3. Import your GitHub repository.
-4. Add the required Environment Variables (see [Configuration](#configuration)).
-5. Click **Deploy**! 
+4. Click **Deploy**! 
 
 *Note: Vercel automatically detects the `vercel.json` file which instructs it to properly bundle the HTML templates, CSS, JS, and font files for the serverless function.*
-
----
-
-## ⚙️ Configuration (.env)
-
-To enable the automated email dispatching engine, you must configure your SMTP credentials. Create a `.env` file in the root directory or add these to your Vercel Project settings:
-
-```ini
-# The SMTP server (e.g., smtp.gmail.com)
-SMTP_SERVER=smtp.gmail.com
-
-# Comma-separated list of sender emails
-EMAIL_ACCOUNTS=your.email@gmail.com,another.email@gmail.com
-
-# Comma-separated list of passwords (MUST MATCH THE ACCOUNTS ABOVE)
-EMAIL_PASSWORDS=your_app_password,another_app_password
-```
-
-> **Warning for Gmail Users:**
-> You must generate an **App Password** for your Google Account. Your regular Google password will NOT work. To do this, go to your Google Account > Security > 2-Step Verification > App Passwords.
 
 ---
 

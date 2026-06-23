@@ -110,6 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const demoMode = document.getElementById('demo_mode').checked;
         formData.append('demo_mode', demoMode);
 
+        if (!demoMode) {
+            const senderEmail = document.getElementById('sender_email').value;
+            const senderPassword = document.getElementById('sender_password').value;
+            if (!senderEmail || !senderPassword) {
+                showMessage("Sender Email and App Password are required when Demo Mode is OFF.", true);
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Generate & Email All';
+                return;
+            }
+        }
+
         const originalText = generateBtn.textContent;
         generateBtn.textContent = 'Processing...';
         generateBtn.disabled = true;

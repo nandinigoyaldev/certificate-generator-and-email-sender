@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 import tempfile
-from send_certificates import generate_certificate, get_participants, send_email, SUBJECT, BODY, ACCOUNTS
+from send_certificates import generate_certificate, get_participants, send_email
 
 app = FastAPI()
 
@@ -91,20 +91,23 @@ async def parse_csv(request: Request, data_file: UploadFile = File(...)):
 
 @app.post("/api/generate")
 async def generate_bulk(
-    request: Request,
+    smtp_server: str = Form("smtp.gmail.com"),
+    sender_email: str = Form(""),
+    sender_password: str = Form(""),
+    subject: str = Form("Here is your Certificate!"),
+    body: str = Form("Thank you for participating!"),
+    demo_mode: str = Form("false"),
     x_pos: int = Form(-1),
     y_pos: int = Form(400),
     align: str = Form("center"),
     font_size: int = Form(80),
     font_color: str = Form("black"),
-    demo_mode: bool = Form(False),
-    subject: str = Form(SUBJECT),
-    body: str = Form(BODY),
     template_file: UploadFile = File(None),
     font_file: UploadFile = File(None),
     data_file: UploadFile = File(None)
 ):
     try:
+        is_demo = demo_mode.lower() == "true"
         temp_template_path = os.path.join(BASE_DIR, "template/sample_template.png")
         temp_font_path = os.path.join(BASE_DIR, "fonts/Roboto-Regular.ttf")
         temp_data_path = os.path.join(BASE_DIR, "data/sample_participants.csv")
@@ -128,6 +131,16 @@ async def generate_bulk(
         if not recipients:
             return JSONResponse(status_code=400, content={"error": "No participants found in data file."})
 
+        # Determine SMTP config
+        if is_demo:
+            current_smtp_server = "smtp.gmail.com"
+            current_sender_email = "demo@example.com"
+            current_sender_password = "demo"
+        else:
+            current_smtp_server = smtp_server
+            current_sender_email = sender_email
+            current_sender_password = sender_password
+
         # Run synchronously for Vercel
         zip_path = process_bulk_certificates(
             recipients=recipients,
@@ -138,17 +151,20 @@ async def generate_bulk(
             align=align,
             font_size=font_size,
             font_color=font_color,
-            demo_mode=demo_mode,
+            demo_mode=is_demo,
+            smtp_server=current_smtp_server,
+            sender_email=current_sender_email,
+            sender_password=current_sender_password,
             subject=subject,
             body=body
         )
-        if demo_mode:
+        if is_demo:
             return FileResponse(zip_path, media_type="application/zip", filename="certificates.zip")
         return {"message": "Bulk generation and emailing completed.", "total": len(recipients)}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-def process_bulk_certificates(recipients, template_path, font_path, y_pos, x_pos, align, font_size, font_color, demo_mode, subject, body):
+def process_bulk_certificates(recipients, template_path, font_path, y_pos, x_pos, align, font_size, font_color, demo_mode, smtp_server, sender_email, sender_password, subject, body):
     import logging
     logger = logging.getLogger(__name__)
     
@@ -180,7 +196,7 @@ def process_bulk_certificates(recipients, template_path, font_path, y_pos, x_pos
                 generated_files.append(cert_path)
                 
                 if not demo_mode and sender_email and sender_pass and email:
-                    send_email(sender_email, sender_pass, email, subject, body, cert_path)
+                    send_email(sender_email, sender_pass, email, subject, body, cert_path, smtp_server)
             except Exception as e:
                 logger.error(f"Failed processing {r.get('Name')}: {e}")
                 

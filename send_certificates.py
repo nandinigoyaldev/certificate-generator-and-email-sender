@@ -4,11 +4,7 @@ import logging
 import argparse
 from email.message import EmailMessage
 from pathlib import Path
-from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
-
-# Load environment variables
-load_dotenv()
 
 # === LOGGING SETUP ===
 logging.basicConfig(
@@ -19,17 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # === CONFIG ===
-# Read from environment variables with fallbacks
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
-
-# We allow multiple accounts, separated by commas
-_emails = os.getenv("EMAIL_ACCOUNTS", "").split(",")
-_passwords = os.getenv("EMAIL_PASSWORDS", "").split(",")
-ACCOUNTS = [{"email": e.strip(), "password": p.strip()} for e, p in zip(_emails, _passwords) if e.strip() and p.strip()]
-
-SUBJECT = os.getenv("EMAIL_SUBJECT", "Thank You for Joining")
-BODY = os.getenv("EMAIL_BODY", "Hello,\n\nThank you for joining our workshop.\n\nBest regards").replace('\\n', '\n')
+SMTP_PORT = 465
 
 import tempfile
 TEMPLATE_FILE = "template/sample_template.png"
@@ -81,7 +67,7 @@ def generate_certificate(name: str, template_file: str, font_file: str, font_siz
     template.save(filename, "PDF")
     return filename
 
-def send_email(sender: str, password: str, recipient: str, subject: str, body: str, attachment: str) -> None:
+def send_email(sender: str, password: str, recipient: str, subject: str, body: str, attachment: str, smtp_server: str = "smtp.gmail.com") -> None:
     """Sends an email with the certificate attached."""
     msg = EmailMessage()
     msg["From"] = sender
@@ -97,7 +83,7 @@ def send_email(sender: str, password: str, recipient: str, subject: str, body: s
             filename=os.path.basename(attachment),
         )
 
-    with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as smtp:
+    with smtplib.SMTP_SSL(smtp_server, SMTP_PORT) as smtp:
         smtp.login(sender, password)
         smtp.send_message(msg)
         logger.info(f"✅ Email sent to {recipient}")
