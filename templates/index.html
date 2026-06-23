@@ -36,52 +36,56 @@
                 <div class="controls panel glass">
                 <h2>Settings</h2>
                 <form id="cert-form">
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="name">Test Name (for preview)</label>
                         <input type="text" id="name" name="name" value="Jane Doe">
                     </div>
 
-                    <div class="email-settings-box" style="margin: 1.5rem 0; padding: 1.5rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
-                        <h3 style="font-size: 0.95rem; margin-bottom: 1rem; color: var(--text-primary);">Email Configuration</h3>
+                    <details class="email-settings-box" style="margin: 1rem 0; padding: 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                        <summary style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); cursor: pointer; user-select: none;">Email Configuration (Click to Expand)</summary>
                         
-                        <div class="form-group">
-                            <label for="smtp_server">SMTP Server</label>
-                            <input type="text" id="smtp_server" name="smtp_server" value="smtp.gmail.com">
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group half">
-                                <label for="sender_email">Sender Email</label>
-                                <input type="email" id="sender_email" name="sender_email" placeholder="your@gmail.com">
+                        <div style="margin-top: 1rem;">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="smtp_server">SMTP Server</label>
+                                <input type="text" id="smtp_server" name="smtp_server" value="smtp.gmail.com">
                             </div>
-                            <div class="form-group half">
-                                <label for="sender_password">App Password</label>
-                                <input type="password" id="sender_password" name="sender_password" placeholder="••••••••">
+
+                            <div class="form-row" style="margin-bottom: 1rem;">
+                                <div class="form-group half" style="margin-bottom: 0;">
+                                    <label for="sender_email">Sender Email</label>
+                                    <input type="email" id="sender_email" name="sender_email" placeholder="your@gmail.com">
+                                </div>
+                                <div class="form-group half" style="margin-bottom: 0;">
+                                    <label for="sender_password">App Password</label>
+                                    <input type="password" id="sender_password" name="sender_password" placeholder="••••••••">
+                                </div>
+                            </div>
+                            <small class="helper-text" style="margin-top: -0.5rem; margin-bottom: 1rem;">Passwords are sent securely and never stored.</small>
+                            
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="subject">Email Subject</label>
+                                <input type="text" id="subject" name="subject" value="Here is your Certificate!">
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="body">Email Body</label>
+                                <textarea id="body" name="body" rows="2">Hello,&#13;&#10;&#13;&#10;Please find your certificate attached.&#13;&#10;&#13;&#10;Best,</textarea>
                             </div>
                         </div>
-                        <small class="helper-text" style="margin-top: -0.5rem; margin-bottom: 1rem;">Required for sending emails. Passwords are sent securely and never stored.</small>
-                        
-                        <div class="form-group">
-                            <label for="subject">Email Subject</label>
-                            <input type="text" id="subject" name="subject" value="Here is your Certificate!">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="body">Email Body</label>
-                            <textarea id="body" name="body" rows="3">Hello,&#13;&#10;&#13;&#10;Thank you for participating! Please find your certificate attached.&#13;&#10;&#13;&#10;Best regards,</textarea>
-                        </div>
-                    </div>
+                    </details>
 
-                    <div class="form-group file-upload">
-                        <label for="template_file">Template Image (PNG/JPG)</label>
-                        <input type="file" id="template_file" name="template_file" accept="image/*">
-                        <small class="helper-text">Leave blank to use the default sample template.</small>
-                    </div>
+                    <div class="form-row">
+                        <div class="form-group file-upload half" style="margin-bottom: 1rem; padding: 1rem;">
+                            <label for="template_file">Template (PNG/JPG)</label>
+                            <input type="file" id="template_file" name="template_file" accept="image/*">
+                            <small class="helper-text">Leave blank for default.</small>
+                        </div>
 
-                    <div class="form-group file-upload">
-                        <label for="data_file">Participants Data (CSV/XLSX)</label>
-                        <input type="file" id="data_file" name="data_file" accept=".csv, .xlsx">
-                        <small class="helper-text">Must contain 'Name' and 'Email' columns.</small>
+                        <div class="form-group file-upload half" style="margin-bottom: 1rem; padding: 1rem;">
+                            <label for="data_file">Data (CSV/XLSX)</label>
+                            <input type="file" id="data_file" name="data_file" accept=".csv, .xlsx">
+                            <small class="helper-text">Must have Name & Email.</small>
+                        </div>
                     </div>
 
                     <div class="form-actions">
