@@ -25,11 +25,6 @@
     </nav>
 
     <div class="container">
-        <header>
-            <h1>CredFlow</h1>
-            <p>Generate and dispatch certificates at scale.</p>
-        </header>
-        
         <!-- Dashboard View -->
         <main id="dashboard-view" class="view-section active">
             <div class="dashboard">
@@ -118,20 +113,20 @@
                     </table>
                 </div>
 
-                <div class="bulk-actions" style="margin-top: 1.5rem;">
-                    <div class="toggle-group">
+                <div class="bulk-actions" style="margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div class="toggle-group" style="margin: 0;">
                         <label class="switch">
                             <input type="checkbox" id="demo_mode" name="demo_mode">
                             <span class="slider round"></span>
                         </label>
-                        <div class="toggle-text">
-                            <span>Demo Mode</span>
-                            <small class="helper-text">Generate ZIP without sending emails</small>
+                        <div class="toggle-text" style="line-height: 1.2;">
+                            <span style="font-weight: 500;">Demo Mode</span>
+                            <small class="helper-text" style="margin-top: 0;">ZIP only, no emails</small>
                         </div>
                     </div>
-                    <button type="button" id="generate-btn" class="btn btn-primary">Generate & Email All</button>
+                    <button type="button" id="generate-btn" class="btn btn-primary" style="width: auto;">Generate & Email All</button>
                 </div>
-                <div id="status-message" class="status-message hidden"></div>
+                <div id="status-message" class="status-message hidden" style="margin-top: 1rem;"></div>
             </div>
             </div>
         </main>
