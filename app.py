@@ -1,0 +1,151 @@
+import os
+import shutil
+from pathlib import Path
+from fastapi import FastAPI, Request, File, UploadFile, Form, BackgroundTasks
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from send_certificates import generate_certificate, get_participants, send_email, SUBJECT, BODY, ACCOUNTS
+
+app = FastAPI()
+
+# Mount static files
+os.makedirs("static", exist_ok=True)
+os.makedirs("templates", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+# Ensure required directories exist
+UPLOAD_DIR = Path("uploads")
+OUTPUT_DIR = Path("certificates")
+UPLOAD_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.post("/api/preview")
+async def preview_certificate(
+    name: str = Form("John Doe"),
+    y_pos: int = Form(400),
+    font_size: int = Form(80),
+    font_color: str = Form("black"),
+    template_file: UploadFile = File(None),
+    font_file: UploadFile = File(None)
+):
+    """Generates a preview certificate and returns it."""
+    try:
+        # Default files if none provided
+        temp_template_path = "template/sample_template.png"
+        temp_font_path = "fonts/Roboto-Regular.ttf"
+
+        if template_file and template_file.filename:
+            temp_template_path = UPLOAD_DIR / template_file.filename
+            with open(temp_template_path, "wb") as buffer:
+                shutil.copyfileobj(template_file.file, buffer)
+        
+        if font_file and font_file.filename:
+            temp_font_path = UPLOAD_DIR / font_file.filename
+            with open(temp_font_path, "wb") as buffer:
+                shutil.copyfileobj(font_file.file, buffer)
+
+        if not os.path.exists(temp_template_path) or not os.path.exists(temp_font_path):
+            return JSONResponse(status_code=400, content={"error": "Template or font file not found."})
+
+        cert_path = generate_certificate(
+            name=name,
+            template_file=str(temp_template_path),
+            font_file=str(temp_font_path),
+            font_size=font_size,
+            y_pos=y_pos,
+            font_color=font_color
+        )
+        return FileResponse(cert_path, media_type="application/pdf", filename="preview.pdf")
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.post("/api/generate")
+async def generate_bulk(
+    background_tasks: BackgroundTasks,
+    y_pos: int = Form(400),
+    font_size: int = Form(80),
+    font_color: str = Form("black"),
+    demo_mode: bool = Form(False),
+    template_file: UploadFile = File(None),
+    font_file: UploadFile = File(None),
+    data_file: UploadFile = File(None)
+):
+    try:
+        temp_template_path = "template/sample_template.png"
+        temp_font_path = "fonts/Roboto-Regular.ttf"
+        temp_data_path = "data/sample_participants.csv"
+
+        if template_file and template_file.filename:
+            temp_template_path = UPLOAD_DIR / template_file.filename
+            with open(temp_template_path, "wb") as buffer:
+                shutil.copyfileobj(template_file.file, buffer)
+        
+        if font_file and font_file.filename:
+            temp_font_path = UPLOAD_DIR / font_file.filename
+            with open(temp_font_path, "wb") as buffer:
+                shutil.copyfileobj(font_file.file, buffer)
+
+        if data_file and data_file.filename:
+            temp_data_path = UPLOAD_DIR / data_file.filename
+            with open(temp_data_path, "wb") as buffer:
+                shutil.copyfileobj(data_file.file, buffer)
+
+        recipients = get_participants(str(temp_data_path))
+        if not recipients:
+            return JSONResponse(status_code=400, content={"error": "No participants found in data file."})
+
+        # We'll run the bulk process in the background
+        background_tasks.add_task(
+            process_bulk_certificates,
+            recipients=recipients,
+            template_path=str(temp_template_path),
+            font_path=str(temp_font_path),
+            y_pos=y_pos,
+            font_size=font_size,
+            font_color=font_color,
+            demo_mode=demo_mode
+        )
+        return {"message": "Bulk generation started.", "total": len(recipients)}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+def process_bulk_certificates(recipients, template_path, font_path, y_pos, font_size, font_color, demo_mode):
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    num_accounts = len(ACCOUNTS) if ACCOUNTS else 1
+    batch_size = max(1, len(recipients) // num_accounts) if len(recipients) > 1 and num_accounts > 1 else len(recipients)
+    batches = [recipients[i:i + batch_size] for i in range(0, len(recipients), batch_size)]
+
+    for i, batch in enumerate(batches):
+        sender_email, sender_pass = None, None
+        if not demo_mode and ACCOUNTS:
+            account = ACCOUNTS[i % len(ACCOUNTS)]
+            sender_email = account["email"]
+            sender_pass = account["password"]
+
+        for r in batch:
+            try:
+                name = str(r.get("Name", "")).strip()
+                email = str(r.get("Email", "")).strip()
+                if not name:
+                    continue
+                
+                safe_name = name.replace("/", "-").replace("\\", "-")
+                cert_path = os.path.join("certificates", f"{safe_name}_certificate.pdf")
+                
+                if not os.path.exists(cert_path):
+                    cert_path = generate_certificate(name, template_path, font_path, font_size, y_pos, font_color)
+                
+                if not demo_mode and sender_email and sender_pass and email:
+                    send_email(sender_email, sender_pass, email, SUBJECT, BODY, cert_path)
+            except Exception as e:
+                logger.error(f"Failed processing {r.get('Name')}: {e}")

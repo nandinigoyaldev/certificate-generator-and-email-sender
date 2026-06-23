@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Certificate Generator</h1>
+            <p>Create and email certificates with ease.</p>
+        </header>
+        
+        <main class="dashboard">
+            <div class="controls panel glass">
+                <h2>Settings</h2>
+                <form id="cert-form">
+                    <div class="form-group">
+                        <label for="name">Test Name (for preview)</label>
+                        <input type="text" id="name" name="name" value="Jane Doe">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="y_pos">Y Position</label>
+                            <input type="number" id="y_pos" name="y_pos" value="400">
+                        </div>
+                        <div class="form-group half">
+                            <label for="font_size">Font Size</label>
+                            <input type="number" id="font_size" name="font_size" value="80">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="font_color">Font Color</label>
+                        <input type="color" id="font_color" name="font_color" value="#000000">
+                    </div>
+
+                    <div class="form-group file-upload">
+                        <label for="template_file">Template Image (PNG/JPG)</label>
+                        <input type="file" id="template_file" name="template_file" accept="image/*">
+                    </div>
+
+                    <div class="form-group file-upload">
+                        <label for="font_file">Font File (TTF)</label>
+                        <input type="file" id="font_file" name="font_file" accept=".ttf">
+                    </div>
+
+                    <div class="form-group file-upload">
+                        <label for="data_file">Participants Data (CSV/XLSX)</label>
+                        <input type="file" id="data_file" name="data_file" accept=".csv, .xlsx">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="preview-btn" class="btn btn-secondary">Update Preview</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="preview panel glass">
+                <h2>Preview</h2>
+                <div class="preview-container">
+                    <div class="loader" id="loader" style="display: none;"></div>
+                    <iframe id="preview-frame" src="" frameborder="0"></iframe>
+                </div>
+                <div class="bulk-actions">
+                    <div class="toggle-group">
+                        <label class="switch">
+                            <input type="checkbox" id="demo_mode" name="demo_mode">
+                            <span class="slider round"></span>
+                        </label>
+                        <span>Demo Mode (Skip sending emails)</span>
+                    </div>
+                    <button type="button" id="generate-btn" class="btn btn-primary">Generate & Email All</button>
+                </div>
+                <div id="status-message" class="status-message hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

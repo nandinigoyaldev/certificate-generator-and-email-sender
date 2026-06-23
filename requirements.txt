@@ -2,3 +2,7 @@ pillow>=10.0.0
 pandas
 openpyxl
 python-dotenv==1.0.1
+fastapi
+uvicorn
+python-multipart
+jinja2
