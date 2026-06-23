@@ -26,7 +26,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     try:
-        return templates.TemplateResponse("index.html", {"request": request})
+        return templates.TemplateResponse(request=request, name="index.html")
     except Exception as e:
         import traceback
         return f"<html><body><h1>Internal Server Error</h1><pre>{traceback.format_exc()}</pre></body></html>"
