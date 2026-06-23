@@ -25,7 +25,11 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    try:
+        return templates.TemplateResponse("index.html", {"request": request})
+    except Exception as e:
+        import traceback
+        return f"<html><body><h1>Internal Server Error</h1><pre>{traceback.format_exc()}</pre></body></html>"
 
 @app.post("/api/preview")
 async def preview_certificate(
@@ -39,8 +43,8 @@ async def preview_certificate(
     """Generates a preview certificate and returns it."""
     try:
         # Default files if none provided
-        temp_template_path = "template/sample_template.png"
-        temp_font_path = "fonts/Roboto-Regular.ttf"
+        temp_template_path = os.path.join(BASE_DIR, "template/sample_template.png")
+        temp_font_path = os.path.join(BASE_DIR, "fonts/Roboto-Regular.ttf")
 
         if template_file and template_file.filename:
             temp_template_path = UPLOAD_DIR / template_file.filename
@@ -78,9 +82,9 @@ async def generate_bulk(
     data_file: UploadFile = File(None)
 ):
     try:
-        temp_template_path = "template/sample_template.png"
-        temp_font_path = "fonts/Roboto-Regular.ttf"
-        temp_data_path = "data/sample_participants.csv"
+        temp_template_path = os.path.join(BASE_DIR, "template/sample_template.png")
+        temp_font_path = os.path.join(BASE_DIR, "fonts/Roboto-Regular.ttf")
+        temp_data_path = os.path.join(BASE_DIR, "data/sample_participants.csv")
 
         if template_file and template_file.filename:
             temp_template_path = UPLOAD_DIR / template_file.filename
