@@ -6,20 +6,20 @@ from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+import tempfile
 from send_certificates import generate_certificate, get_participants, send_email, SUBJECT, BODY, ACCOUNTS
 
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Mount static files
-os.makedirs("static", exist_ok=True)
-os.makedirs("templates", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
-templates = Jinja2Templates(directory="templates")
-
-# Ensure required directories exist
-UPLOAD_DIR = Path("uploads")
-OUTPUT_DIR = Path("certificates")
+# Ensure required directories exist in temp
+UPLOAD_DIR = Path(tempfile.gettempdir()) / "uploads"
+OUTPUT_DIR = Path(tempfile.gettempdir()) / "certificates"
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -69,7 +69,6 @@ async def preview_certificate(
 
 @app.post("/api/generate")
 async def generate_bulk(
-    background_tasks: BackgroundTasks,
     y_pos: int = Form(400),
     font_size: int = Form(80),
     font_color: str = Form("black"),
@@ -102,9 +101,8 @@ async def generate_bulk(
         if not recipients:
             return JSONResponse(status_code=400, content={"error": "No participants found in data file."})
 
-        # We'll run the bulk process in the background
-        background_tasks.add_task(
-            process_bulk_certificates,
+        # Run synchronously for Vercel
+        process_bulk_certificates(
             recipients=recipients,
             template_path=str(temp_template_path),
             font_path=str(temp_font_path),
@@ -140,7 +138,7 @@ def process_bulk_certificates(recipients, template_path, font_path, y_pos, font_
                     continue
                 
                 safe_name = name.replace("/", "-").replace("\\", "-")
-                cert_path = os.path.join("certificates", f"{safe_name}_certificate.pdf")
+                cert_path = os.path.join(str(OUTPUT_DIR), f"{safe_name}_certificate.pdf")
                 
                 if not os.path.exists(cert_path):
                     cert_path = generate_certificate(name, template_path, font_path, font_size, y_pos, font_color)

@@ -31,8 +31,9 @@ ACCOUNTS = [{"email": e.strip(), "password": p.strip()} for e, p in zip(_emails,
 SUBJECT = os.getenv("EMAIL_SUBJECT", "Thank You for Joining")
 BODY = os.getenv("EMAIL_BODY", "Hello,\n\nThank you for joining our workshop.\n\nBest regards").replace('\\n', '\n')
 
+import tempfile
 TEMPLATE_FILE = "template/sample_template.png"
-OUTPUT_DIR = "certificates"
+OUTPUT_DIR = os.path.join(tempfile.gettempdir(), "certificates")
 
 def get_participants(file_path: str):
     """Load participants from a CSV or Excel file."""
