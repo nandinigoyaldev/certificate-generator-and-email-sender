@@ -1,62 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Generator</title>
+    <title>CredFlow</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <div class="background-elements">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon"></span>
+                CredFlow
+            </div>
+            <div class="nav-links">
+                <button class="nav-tab active" data-target="dashboard-view">Dashboard</button>
+                <button class="nav-tab" data-target="instructions-view">Instructions</button>
+                <a href="#" class="nav-link">GitHub</a>
+            </div>
+        </div>
+    </nav>
 
     <div class="container">
         <header>
-            <h1>Certificate Generator</h1>
-            <p>Create and email certificates with ease.</p>
+            <h1>CredFlow</h1>
+            <p>Generate and dispatch certificates at scale.</p>
         </header>
         
-        <main class="dashboard">
-            <div class="controls panel glass">
+        <!-- Dashboard View -->
+        <main id="dashboard-view" class="view-section active">
+            <div class="dashboard">
+                <div class="controls panel glass">
                 <h2>Settings</h2>
                 <form id="cert-form">
                     <div class="form-group">
                         <label for="name">Test Name (for preview)</label>
                         <input type="text" id="name" name="name" value="Jane Doe">
                     </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="y_pos">Y Position</label>
-                            <input type="number" id="y_pos" name="y_pos" value="400">
-                        </div>
-                        <div class="form-group half">
-                            <label for="font_size">Font Size</label>
-                            <input type="number" id="font_size" name="font_size" value="80">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="font_color">Font Color</label>
-                        <input type="color" id="font_color" name="font_color" value="#000000">
-                    </div>
 
                     <div class="form-group file-upload">
                         <label for="template_file">Template Image (PNG/JPG)</label>
                         <input type="file" id="template_file" name="template_file" accept="image/*">
-                    </div>
-
-                    <div class="form-group file-upload">
-                        <label for="font_file">Font File (TTF)</label>
-                        <input type="file" id="font_file" name="font_file" accept=".ttf">
+                        <small class="helper-text">Leave blank to use the default sample template.</small>
                     </div>
 
                     <div class="form-group file-upload">
                         <label for="data_file">Participants Data (CSV/XLSX)</label>
                         <input type="file" id="data_file" name="data_file" accept=".csv, .xlsx">
+                        <small class="helper-text">Must contain 'Name' and 'Email' columns.</small>
                     </div>
 
                     <div class="form-actions">
@@ -66,26 +60,93 @@
             </div>
 
             <div class="preview panel glass">
-                <h2>Preview</h2>
+                <h2>Live Preview</h2>
                 <div class="preview-container">
                     <div class="loader" id="loader" style="display: none;"></div>
                     <iframe id="preview-frame" src="" frameborder="0"></iframe>
                 </div>
-                <div class="bulk-actions">
+                
+                <h2>Data Preview</h2>
+                <div class="data-table-container">
+                    <table id="data-table" class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: var(--text-muted)">Upload a CSV to view participants</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bulk-actions" style="margin-top: 1.5rem;">
                     <div class="toggle-group">
                         <label class="switch">
                             <input type="checkbox" id="demo_mode" name="demo_mode">
                             <span class="slider round"></span>
                         </label>
-                        <span>Demo Mode (Skip sending emails)</span>
+                        <div class="toggle-text">
+                            <span>Demo Mode</span>
+                            <small class="helper-text">Generate ZIP without sending emails</small>
+                        </div>
                     </div>
                     <button type="button" id="generate-btn" class="btn btn-primary">Generate & Email All</button>
                 </div>
                 <div id="status-message" class="status-message hidden"></div>
             </div>
+            </div>
         </main>
+
+        <!-- Instructions View -->
+        <main id="instructions-view" class="view-section hidden">
+            <div class="panel">
+                <h2>Quick Start Guide</h2>
+                <div class="instruction-content">
+                    <section class="instruction-step">
+                        <h3>1. Environment Setup (Critical)</h3>
+                        <p>To enable the email sending functionality, you must configure your SMTP credentials. Create a <code>.env</code> file in the root directory or add these to your Vercel Environment Variables:</p>
+                        <pre><code>SMTP_SERVER=smtp.gmail.com
+EMAIL_ACCOUNTS=your.email@gmail.com,another@gmail.com
+EMAIL_PASSWORDS=your_app_password,another_password</code></pre>
+                        <p class="note"><strong>Note:</strong> If using Gmail, you must generate an <a href="https://support.google.com/accounts/answer/185833" target="_blank" style="color: var(--accent-primary)">App Password</a>. Regular passwords will not work.</p>
+                    </section>
+
+                    <section class="instruction-step">
+                        <h3>2. Formatting your Data File</h3>
+                        <p>Upload an Excel (<code>.xlsx</code>) or CSV file. The system requires exactly two columns to function correctly:</p>
+                        <table class="styled-table" style="width: 50%; margin-top: 1rem;">
+                            <thead>
+                                <tr><th>Name</th><th>Email</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Jane Doe</td><td>jane@example.com</td></tr>
+                                <tr><td>John Smith</td><td>john@example.com</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section class="instruction-step">
+                        <h3>3. Generating Certificates</h3>
+                        <p>You have two modes of operation:</p>
+                        <ul>
+                            <li><strong>Live Mode:</strong> Turn "Demo Mode" OFF. The system will generate a PDF for each participant and instantly email it to them using your SMTP credentials.</li>
+                            <li><strong>Demo Mode:</strong> Turn "Demo Mode" ON. The system will skip the emailing phase, process all certificates, and securely download a <code>.zip</code> file containing all the PDFs to your local machine.</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Built for the Hackathon.</p>
+        </footer>
     </div>
 
     <script src="/static/js/app.js"></script>
 </body>
+
 </html>

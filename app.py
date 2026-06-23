@@ -1,7 +1,9 @@
 import os
 import shutil
+import zipfile
+import json
 from pathlib import Path
-from fastapi import FastAPI, Request, File, UploadFile, Form, BackgroundTasks
+from fastapi import FastAPI, Request, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -33,8 +35,11 @@ async def read_root(request: Request):
 
 @app.post("/api/preview")
 async def preview_certificate(
+    request: Request,
     name: str = Form("John Doe"),
+    x_pos: int = Form(-1),
     y_pos: int = Form(400),
+    align: str = Form("center"),
     font_size: int = Form(80),
     font_color: str = Form("black"),
     template_file: UploadFile = File(None),
@@ -65,18 +70,36 @@ async def preview_certificate(
             font_file=str(temp_font_path),
             font_size=font_size,
             y_pos=y_pos,
-            font_color=font_color
+            font_color=font_color,
+            x_pos=x_pos,
+            align=align
         )
         return FileResponse(cert_path, media_type="application/pdf", filename="preview.pdf")
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+@app.post("/api/parse_csv")
+async def parse_csv(request: Request, data_file: UploadFile = File(...)):
+    try:
+        temp_data_path = UPLOAD_DIR / data_file.filename
+        with open(temp_data_path, "wb") as buffer:
+            shutil.copyfileobj(data_file.file, buffer)
+        recipients = get_participants(str(temp_data_path))
+        return JSONResponse(content={"participants": recipients})
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
 @app.post("/api/generate")
 async def generate_bulk(
+    request: Request,
+    x_pos: int = Form(-1),
     y_pos: int = Form(400),
+    align: str = Form("center"),
     font_size: int = Form(80),
     font_color: str = Form("black"),
     demo_mode: bool = Form(False),
+    subject: str = Form(SUBJECT),
+    body: str = Form(BODY),
     template_file: UploadFile = File(None),
     font_file: UploadFile = File(None),
     data_file: UploadFile = File(None)
@@ -106,26 +129,33 @@ async def generate_bulk(
             return JSONResponse(status_code=400, content={"error": "No participants found in data file."})
 
         # Run synchronously for Vercel
-        process_bulk_certificates(
+        zip_path = process_bulk_certificates(
             recipients=recipients,
             template_path=str(temp_template_path),
             font_path=str(temp_font_path),
             y_pos=y_pos,
+            x_pos=x_pos,
+            align=align,
             font_size=font_size,
             font_color=font_color,
-            demo_mode=demo_mode
+            demo_mode=demo_mode,
+            subject=subject,
+            body=body
         )
-        return {"message": "Bulk generation started.", "total": len(recipients)}
+        if demo_mode:
+            return FileResponse(zip_path, media_type="application/zip", filename="certificates.zip")
+        return {"message": "Bulk generation and emailing completed.", "total": len(recipients)}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-def process_bulk_certificates(recipients, template_path, font_path, y_pos, font_size, font_color, demo_mode):
+def process_bulk_certificates(recipients, template_path, font_path, y_pos, x_pos, align, font_size, font_color, demo_mode, subject, body):
     import logging
     logger = logging.getLogger(__name__)
     
     num_accounts = len(ACCOUNTS) if ACCOUNTS else 1
     batch_size = max(1, len(recipients) // num_accounts) if len(recipients) > 1 and num_accounts > 1 else len(recipients)
     batches = [recipients[i:i + batch_size] for i in range(0, len(recipients), batch_size)]
+    generated_files = []
 
     for i, batch in enumerate(batches):
         sender_email, sender_pass = None, None
@@ -145,9 +175,20 @@ def process_bulk_certificates(recipients, template_path, font_path, y_pos, font_
                 cert_path = os.path.join(str(OUTPUT_DIR), f"{safe_name}_certificate.pdf")
                 
                 if not os.path.exists(cert_path):
-                    cert_path = generate_certificate(name, template_path, font_path, font_size, y_pos, font_color)
+                    cert_path = generate_certificate(name, template_path, font_path, font_size, y_pos, font_color, x_pos, align)
+                
+                generated_files.append(cert_path)
                 
                 if not demo_mode and sender_email and sender_pass and email:
-                    send_email(sender_email, sender_pass, email, SUBJECT, BODY, cert_path)
+                    send_email(sender_email, sender_pass, email, subject, body, cert_path)
             except Exception as e:
                 logger.error(f"Failed processing {r.get('Name')}: {e}")
+                
+    # Create ZIP archive
+    zip_filename = os.path.join(str(OUTPUT_DIR), "certificates.zip")
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        for f in generated_files:
+            if os.path.exists(f):
+                zipf.write(f, os.path.basename(f))
+                
+    return zip_filename

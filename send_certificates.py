@@ -51,7 +51,7 @@ def get_participants(file_path: str):
         return []
 
 # === FUNCTIONS ===
-def generate_certificate(name: str, template_file: str, font_file: str, font_size: int, y_pos: int, font_color: str = "black") -> str:
+def generate_certificate(name: str, template_file: str, font_file: str, font_size: int, y_pos: int, font_color: str = "black", x_pos: int = -1, align: str = "center") -> str:
     """Generates a certificate with the given name and returns the output filename."""
     if not os.path.exists(template_file):
         raise FileNotFoundError(f"Template file not found at {template_file}")
@@ -62,10 +62,17 @@ def generate_certificate(name: str, template_file: str, font_file: str, font_siz
     draw = ImageDraw.Draw(template)
     font = ImageFont.truetype(font_file, font_size)
 
-    # Center horizontally
     text_width = draw.textlength(name, font=font)
     image_width = template.width
-    position = ((image_width - text_width) // 2, y_pos)
+
+    if align == "center":
+        x = (image_width - text_width) // 2 if x_pos == -1 else x_pos - (text_width // 2)
+    elif align == "right":
+        x = image_width - text_width if x_pos == -1 else x_pos - text_width
+    else: # left
+        x = 0 if x_pos == -1 else x_pos
+
+    position = (x, y_pos)
 
     draw.text(position, name, font=font, fill=font_color)
 
