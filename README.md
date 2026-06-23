@@ -1,50 +1,46 @@
-<h1 align="center">
-  Certificate Generator & Email Sender 🎓
-</h1>
+<div align="center">
+  <img src="https://img.shields.io/badge/CredFlow-SaaS-3b82f6?style=for-the-badge" alt="CredFlow Logo">
+  <h1>🏆 CredFlow</h1>
+  <p><strong>A lightning-fast, hackathon-ready tool to generate personalized certificates in bulk and dispatch them automatically via email.</strong></p>
 
-<p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/python-3.8%2B-blue.svg">
-  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg">
-  <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
-</p>
-
-<p align="center">
-  An open-source, dual-interface (Web UI & CLI) tool for generating beautifully customized certificates in bulk from Excel or CSV files, and emailing them automatically to participants. 
-</p>
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#deployment">Deployment</a> •
+    <a href="#configuration">Configuration</a>
+  </p>
+</div>
 
 ---
 
-## ✨ Features
+Welcome to **CredFlow**! Whether you're organizing a 500-person hackathon, a local workshop, or an online webinar, this tool completely automates the tedious process of creating and sending out participant certificates.
 
-- **Stunning Web Interface**: A modern, glassmorphic dashboard built with FastAPI to visualize, configure, and manage certificate generation and distribution natively in your browser.
-- **Live Previews**: Adjust typography, font color, size, and Y-position in real-time before generating hundreds of certificates.
-- **Bulk Generation**: Read participant data from `.csv` or `.xlsx` files effortlessly, processing everything asynchronously in the background.
-- **Automated Emailing**: Supports multiple SMTP sender accounts to bypass rate limits and distribute the load.
-- **Cross-Platform Compatibility**: Bundled with standard open-source fonts (Roboto) for consistent rendering on macOS, Windows, and Linux.
-- **Security First**: Uses `.env` files to prevent your email passwords from ever leaking to GitHub.
+It features an ultra-sleek, minimalist web dashboard inspired by modern SaaS products. Built with **FastAPI** and natively compatible with **Vercel Serverless**, you can host it in seconds and process hundreds of participants instantly.
 
----
+## ✨ Key Features
 
-## 📦 Prerequisites
-
-- **Python 3.8+** (use `python3` command if `python` is not found on your system)
-- A Gmail Account with an "App Password" generated (if using Gmail).
+- **"Credify Dark" Aesthetic:** A highly professional, distraction-free interface utilizing deep slates, neon blue accents, and sharp typography.
+- **Dynamic Data Parsing:** Upload your CSV/XLSX and instantly view a clean data table of all participants directly in your browser.
+- **Vercel Serverless Ready:** The backend is fully ephemeral and writes strictly to `/tmp`, allowing you to host the entire platform on Vercel's free tier.
+- **Drag & Drop:** Upload custom templates and lists with seamless native drag-and-drop zones.
+- **Zero-Setup Typographical Engine:** The app uses smart alignment and auto-centers the text on the certificate so you don't have to guess X/Y coordinates anymore.
+- **Demo Mode (ZIP Downloads):** Don't want to spam emails just yet? Toggle "Demo Mode" and the system will instantly process your certificates and securely download a `.zip` file containing all PDFs!
+- **Load Balanced Mailing:** The backend supports round-robin dispatch across multiple SMTP accounts to prevent rate-limiting during massive events.
 
 ---
 
-## 🚀 Installation
+## 🚀 Quick Start (Local)
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/certificate_project.git
-   cd certificate_project
+   git clone https://github.com/yourusername/credflow.git
+   cd credflow
    ```
 
 2. **Create a virtual environment and activate it:**
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. **Install dependencies:**
@@ -52,73 +48,70 @@
    pip install -r requirements.txt
    ```
 
-4. **Configure your environment variables:**
-   Copy `.env.example` to `.env` and configure your SMTP credentials and email templates.
+4. **Start the FastAPI Development Server:**
    ```bash
-   cp .env.example .env
+   uvicorn app:app --port 8000 --reload
    ```
 
----
-
-## 🌐 Usage: Web Dashboard (Recommended)
-
-The interactive Web UI provides the most seamless experience for creating and distributing certificates. 
-
-1. **Start the FastAPI Server:**
-   ```bash
-   uvicorn app:app --port 8000
-   ```
-2. **Access the Dashboard:**
+5. **Access the Dashboard:**
    Open your browser and navigate to [http://localhost:8000](http://localhost:8000).
-3. **Configure & Preview:**
-   - Upload your custom template, fonts, and participant data.
-   - Adjust the **Y Position**, **Font Size**, and **Font Color**.
-   - Click **Update Preview** to verify the name placement.
-4. **Distribute:**
-   - Turn on **Demo Mode** to test the generation process without sending emails.
-   - Click **Generate & Email All** to dispatch your certificates in the background!
 
 ---
 
-## 💻 Usage: Command Line Interface
+## ☁️ Deployment (Vercel)
 
-For power users or automated CI/CD environments, the original CLI script remains fully supported.
+CredFlow is pre-configured for instant serverless deployment on Vercel!
 
-### 1. Test Name Placement
-Test the name placement before processing your list:
-```bash
-python3 send_certificates.py --test-name "John Doe" --y-pos 400 --font-size 80
-```
-This generates a single `John Doe_certificate.pdf` inside the `certificates/` directory.
+1. Push your code to a GitHub repository.
+2. Sign in to [Vercel](https://vercel.com) and click **Add New Project**.
+3. Import your GitHub repository.
+4. Add the required Environment Variables (see [Configuration](#configuration)).
+5. Click **Deploy**! 
 
-### 2. Bulk Generation (Demo Mode)
-Want to see all generated certificates without sending emails yet?
-```bash
-python3 send_certificates.py --demo
-```
-
-### 3. Send Certificates
-Once you are completely ready to send the emails:
-```bash
-python3 send_certificates.py
-```
-*(You can optionally limit the number of emails sent using the `--limit 10` flag).*
+*Note: Vercel automatically detects the `vercel.json` file which instructs it to properly bundle the HTML templates, CSS, JS, and font files for the serverless function.*
 
 ---
 
-## 🎨 Customization
+## ⚙️ Configuration (.env)
 
-- **Template**: The Web UI allows custom template uploads. Alternatively, replace `template/sample_template.png`.
-- **Fonts**: Upload your `.ttf` font directly via the dashboard or place it in the `fonts/` directory.
-- **Data File**: CSV or Excel lists can be uploaded dynamically, or you can update `data/sample_participants.csv`.
+To enable the automated email dispatching engine, you must configure your SMTP credentials. Create a `.env` file in the root directory or add these to your Vercel Project settings:
+
+```ini
+# The SMTP server (e.g., smtp.gmail.com)
+SMTP_SERVER=smtp.gmail.com
+
+# Comma-separated list of sender emails
+EMAIL_ACCOUNTS=your.email@gmail.com,another.email@gmail.com
+
+# Comma-separated list of passwords (MUST MATCH THE ACCOUNTS ABOVE)
+EMAIL_PASSWORDS=your_app_password,another_app_password
+```
+
+> **Warning for Gmail Users:**
+> You must generate an **App Password** for your Google Account. Your regular Google password will NOT work. To do this, go to your Google Account > Security > 2-Step Verification > App Passwords.
 
 ---
 
-## 🤝 Contributing
+## 📄 File Formatting
 
-Contributions, issues and feature requests are welcome!
-Feel free to check out the [issues page](../../issues). Please read the [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
+When uploading your participant list via the Dashboard, ensure it is an Excel (`.xlsx`) or `.csv` file containing exactly two columns:
 
-## 📝 License
+| Name | Email |
+| :--- | :--- |
+| Jane Doe | jane.doe@example.com |
+| John Smith | john.smith@example.com |
 
-This project is [MIT](LICENSE) licensed.
+---
+
+## 🛠 Built With
+
+- **Backend:** Python, FastAPI, Starlette
+- **Frontend:** Vanilla HTML5, CSS3, Javascript (No heavy frameworks!)
+- **Certificate Engine:** Pillow (PIL)
+- **Deployment:** Vercel Serverless
+
+---
+
+<div align="center">
+  <p>Built for hackers, organizers, and communities.</p>
+</div>
